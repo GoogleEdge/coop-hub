@@ -1,0 +1,19 @@
+name: release
+on:
+  push: {tags: ['v*']}
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions: {contents: write}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {run-id: "", pattern: "jdyc-*", merge-multiple: false}
+      - name: 上传 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            **/JDYC-Hub-Win7-v1.0.0.exe
+            **/JDYC-Hub-Win10-v1.0.0.exe
+            **/jdyc-hub-server-linux-amd64
+          body: "揭东一初联机大厅 v1.0.0 首个版本。安装包、服务端二进制与源码见本仓库。"

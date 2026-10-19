@@ -1,0 +1,104 @@
+name: clients
+on:
+  push: {branches: [main]}
+  pull_request: {branches: [main]}
+jobs:
+  core-dll-and-edge:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: >-
+            git make mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-openssl mingw-w64-x86_64-pkg-config
+      - shell: msys2 {0}
+        name: 编译 jdyc-core.dll
+        run: |
+          cmake -S core -B core/build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+          cmake --build core/build -j
+      - shell: msys2 {0}
+        name: 编译 n2n edge.exe (v3.1.1)
+        run: |
+          git clone -b 3.1.1 https://github.com/ntop/n2n /c/n2n
+          cd /c/n2n && ./autogen.sh && ./configure && make -j
+      - name: 下载 frpc.exe 与 TAP 驱动安装包
+        shell: pwsh
+        run: |
+          $r = Invoke-RestMethod "https://api.github.com/repos/fatedier/frp/releases/latest"
+          $a = $r.assets | Where-Object {$_.name -match "windows_amd64.zip"} | Select-Object -First 1
+          Invoke-WebRequest $a.browser_download_url -OutFile frp.zip
+          Expand-Archive frp.zip -DestinationPath frp
+          Copy-Item (Get-ChildItem frp -Recurse -Filter frpc.exe | Select-Object -First 1).FullName deps/
+      - name: 整理依赖目录
+        shell: pwsh
+        run: |
+          New-Item -Force deps -ItemType Directory | Out-Null
+          Copy-Item core/build/jdyc-core.dll deps/
+          Copy-Item C:\n2n\edge.exe deps/
+          $tap = Invoke-RestMethod "https://api.github.com/repos/OpenVPN/tap-windows6/releases/latest"
+          $ta = $tap.assets | Where-Object {$_.name -match "installer.exe"} | Select-Object -First 1
+          Invoke-WebRequest $ta.browser_download_url -OutFile deps/tap-windows-installer.exe
+      - uses: actions/upload-artifact@v4
+        with: {name: jdyc-deps, path: deps/}
+  qt-win7:
+    runs-on: windows-latest
+    needs: [core-dll-and-edge]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {name: jdyc-deps, path: deps}
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2019_64'
+      - name: 配置并构建 Qt 版
+        shell: cmd
+        run: |
+          cmake -S client-qt -B client-qt/build -G "Visual Studio 17 2022" -A x64 ^
+                -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded ^
+                -DJDYC_DEPS_DIR=%CD%\deps
+          cmake --build client-qt/build --config Release -j
+          windeployqt --release client-qt/build/Release/JDYCHub.exe
+          xcopy /E /I /Y deps\* client-qt\build\Release\
+      - uses: actions/upload-artifact@v4
+        with: {name: jdyc-qt-dist, path: client-qt/build/Release/}
+  flutter-main:
+    runs-on: windows-latest
+    needs: [core-dll-and-edge]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {name: jdyc-deps, path: deps}
+      - uses: subosito/flutter-action@v2
+        with: {flutter-version: 'stable'}
+      - run: flutter pub get
+        working-directory: client-flutter
+      - run: flutter build windows --release
+        working-directory: client-flutter
+      - name: 合并依赖
+        shell: pwsh
+        run: Copy-Item deps\* client-flutter\build\windows\x64\runner\Release\ -Force
+      - uses: actions/upload-artifact@v4
+        with: {name: jdyc-flutter-dist, path: client-flutter/build/windows/x64/runner/Release/}
+  package:
+    runs-on: windows-latest
+    needs: [qt-win7, flutter-main]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {name: jdyc-qt-dist, path: dist-qt}
+      - uses: actions/download-artifact@v4
+        with: {name: jdyc-flutter-dist, path: dist-flutter}
+      - run: choco install nsis -y
+      - run: makensis installer/jdyc-win7.nsi
+      - run: makensis installer/jdyc-main.nsi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jdyc-installers
+          path: |
+            installer/JDYC-Hub-Win7-v1.0.0.exe
+            installer/JDYC-Hub-Win10-v1.0.0.exe

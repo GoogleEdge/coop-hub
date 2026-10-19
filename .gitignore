@@ -1,0 +1,18 @@
+# 构建产物与临时文件
+dist/
+dist-qt/
+dist-flutter/
+assets/
+deps/
+*.db
+*.exe
+*.zip
+server/jdyc-hub-server*
+client-qt/build/
+client-flutter/build/
+core/build/
+# flutter 工具生成（构建时自动重建）
+client-flutter/.dart_tool/
+client-flutter/windows/flutter/ephemeral/
+client-flutter/windows/flutter/generated_plugin_registrant.cc
+client-flutter/windows/flutter/generated_plugins.cmake.bak

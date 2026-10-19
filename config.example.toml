@@ -1,0 +1,24 @@
+# 集中占位符：所有域名/密钥类信息只在此处维护，禁止散落硬编码
+# 部署时用真实值替换（见 docs/DEPLOY.md）
+
+[server]
+# 服务端对外域名（HTTPS，由 caddy 自动签发 TLS）
+domain = "jdyc.example.com"
+# 服务端监听地址（内网端口，caddy 反代到它）
+listen = ":7100"
+
+[frps]
+# FRP 服务端（公网服务器）
+host = "jdyc.example.com"
+port = 7000
+token = "change-me-frps-token"
+# 玩家转发端口范围
+allow_ports = "20000-29999"
+
+[supernode]
+# n2n 虚拟局域网引导节点
+addr = "jdyc.example.com:7777"
+
+[admin]
+# 密码哈希 pepper（服务端环境变量 JDYC_ADMIN_PASS_PEPPER）
+pass_pepper = "change-me-pepper"

@@ -1,0 +1,5 @@
+// 资源文件：内嵌清单（requireAdministrator）+ 应用图标
+#include <windows.h>
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "app.manifest"
+IDI_ICON1 ICON "assets/app.ico"

@@ -1,0 +1,33 @@
+# 揭东一初联机大厅 一键部署（三服务：server + frps + caddy）
+# 用法：改好下面占位符后 docker compose up -d
+# 说明：vlan 模式的 n2n supernode 由服务端进程自行拉起（需宿主机 PATH 中有 supernode 可执行文件，见 docs/DEPLOY.md）
+services:
+  frps:
+    image: snowdreamtech/frps
+    network_mode: host
+    environment:
+      FRPS_TOKEN: "change-me-frps-token"
+    command: ["-t", "change-me-frps-token", "-p", "7000", "--allow_ports", "20000-29999"]
+    restart: unless-stopped
+  server:
+    build: .
+    network_mode: host
+    environment:
+      JDYC_LISTEN: ":7100"
+      JDYC_DB: "/data/jdyc.db"
+      JDYC_JWT_SECRET: "change-me-jwt-secret"
+      JDYC_FRPS_HOST: "jdyc.example.com"
+      JDYC_FRPS_PORT: "7000"
+      JDYC_FRPS_TOKEN: "change-me-frps-token"
+      JDYC_SUPERNODE: "jdyc.example.com:7777"
+      JDYC_ADMIN_PASS_PEPPER: "change-me-pepper"
+    volumes:
+      - server-data:/data
+    restart: unless-stopped
+  caddy:
+    image: caddy:2
+    network_mode: host
+    command: ["caddy", "reverse-proxy", "--from", "jdyc.example.com", "--to", "127.0.0.1:7100"]
+    restart: unless-stopped
+volumes:
+  server-data:

@@ -1,0 +1,24 @@
+# systemd 单元（不用 Docker 的裸机部署）
+# 放到 /etc/systemd/system/jdyc-server.service 后：
+#   systemctl daemon-reload && systemctl enable --now jdyc-server
+[Unit]
+Description=揭东一初联机大厅服务端
+After=network-online.target
+
+[Service]
+Type=simple
+User=jdyc
+WorkingDirectory=/opt/jdyc
+Environment=JDYC_LISTEN=:7100
+Environment=JDYC_DB=/opt/jdyc/jdyc.db
+Environment=JDYC_JWT_SECRET=change-me-jwt-secret
+Environment=JDYC_FRPS_HOST=jdyc.example.com
+Environment=JDYC_FRPS_PORT=7000
+Environment=JDYC_FRPS_TOKEN=change-me-frps-token
+Environment=JDYC_SUPERNODE=jdyc.example.com:7777
+Environment=JDYC_ADMIN_PASS_PEPPER=change-me-pepper
+ExecStart=/opt/jdyc/jdyc-hub-server
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
