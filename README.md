@@ -1,9 +1,7 @@
 # 揭东一初联机大厅（jdyc-hub）
 
-<!-- TODO：仓库地址待定，推送后替换 YOUR_GITHUB_OWNER 并打开 badge
-[![server](https://github.com/YOUR_GITHUB_OWNER/jdyc-hub/actions/workflows/ci-server.yml/badge.svg)]()
-[![clients](https://github.com/YOUR_GITHUB_OWNER/jdyc-hub/actions/workflows/ci-clients.yml/badge.svg)]()
--->
+[![server](https://github.com/GoogleEdge/coop-hub/actions/workflows/ci-server.yml/badge.svg)](https://github.com/GoogleEdge/coop-hub/actions/workflows/ci-server.yml)
+[![clients](https://github.com/GoogleEdge/coop-hub/actions/workflows/ci-clients.yml/badge.svg)](https://github.com/GoogleEdge/coop-hub/actions/workflows/ci-clients.yml)
 
 校内 Minecraft / 泰拉瑞亚 / CS1.6 等游戏的联机大厅：注册审核实名（班级+姓名）、两种联机模式（FRP 端口转发 / n2n 虚拟局域网）、双 Windows 客户端（Win7 专用版 + Win10/11 主流版），服务端单二进制，全部产物由 GitHub Actions 公共仓库构建。
 
