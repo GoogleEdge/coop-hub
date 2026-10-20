@@ -104,17 +104,22 @@ func TestIntegration(t *testing.T) {
         if jar["jdyc_admin_session"] == "" {
                 t.Fatal("后台登录未下发会话 Cookie")
         }
-        // 从审核页 HTML 抓两个用户 ID
-        htmlResp, err := client.Get(base + "/admin/review")
+        // 从审核页 HTML 抓两个用户 ID（手动带会话 Cookie，client 未挂 Jar）
+        getAdmin := func(path string) (string, error) {
+                req, _ := http.NewRequest("GET", base+path, nil)
+                req.Header.Set("Cookie", "jdyc_admin_session="+jar["jdyc_admin_session"])
+                r, err := client.Do(req)
+                if err != nil {
+                        return "", err
+                }
+                defer r.Body.Close()
+                b, err := io.ReadAll(r.Body)
+                return string(b), err
+        }
+        html, err := getAdmin("/admin/review")
         if err != nil {
                 t.Fatal(err)
         }
-        htmlBytes, err := io.ReadAll(htmlResp.Body)
-        htmlResp.Body.Close()
-        if err != nil {
-                t.Fatal(err)
-        }
-        html := string(htmlBytes)
         ids := []string{}
         for _, u := range []string{"stuhost", "stuguest"} {
                 // 每行 <td>ID</td><td>username</td>，取 username 前最近的数字段
@@ -150,10 +155,8 @@ func TestIntegration(t *testing.T) {
         }
         // 校验审核页已清空
         time.Sleep(200 * time.Millisecond)
-        htmlResp2, _ := client.Get(base + "/admin/review")
-        htmlBytes2, _ := io.ReadAll(htmlResp2.Body)
-        htmlResp2.Body.Close()
-        if strings.Contains(string(htmlBytes2), "stuhost") {
+        html2, _ := getAdmin("/admin/review")
+        if strings.Contains(html2, "stuhost") {
                 t.Error("审核通过后待审核列表应不含 stuhost")
         }
 
