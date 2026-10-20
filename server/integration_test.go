@@ -215,7 +215,8 @@ func TestIntegration(t *testing.T) {
                 return out["room"].(map[string]any)
         }
         frpRoom := createRoom(hostToken, "MC端口映射房", "frp", "tcp", 25565)
-        remotePort := int(frpRoom["frp_remote_port"].(float64))
+        frpResp := frpRoom["frp"].(map[string]any)
+        remotePort := int(frpResp["remote_port"].(float64))
         if remotePort < 20000 || remotePort > 29999 {
                 t.Errorf("frp 端口 %d 不在 20000-29999", remotePort)
         }

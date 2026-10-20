@@ -188,6 +188,9 @@ func (a *App) handleCreateRoom(w http.ResponseWriter, r *http.Request) {
                 resp["frp"] = frpDetail(room, a.cfg, rt)
         } else {
                 resp["vlan"] = vlanDetail(room, a.cfg, subnetPrefix(room.VlanSubnet)+"1")
+                // 顶层附子网与密钥，便于建房方直接记录
+                resp["vlan_subnet"] = room.VlanSubnet
+                resp["vlan_key"] = room.VlanKey
         }
         writeJSON(w, http.StatusOK, map[string]any{"room": resp})
 }
