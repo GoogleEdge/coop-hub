@@ -12,6 +12,7 @@ jobs:
           msystem: MINGW64
           install: >-
             git make mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-make
             mingw-w64-x86_64-openssl mingw-w64-x86_64-pkg-config
       - shell: msys2 {0}
         name: 编译 jdyc-core.dll
@@ -55,6 +56,7 @@ jobs:
           host: 'windows'
           target: 'desktop'
           arch: 'win64_msvc2019_64'
+          modules: 'qtdeclarative qtwebsockets'
       - name: 配置并构建 Qt 版
         shell: cmd
         run: |
