@@ -325,7 +325,8 @@ func TestIntegration(t *testing.T) {
         } else {
                 r4.Body.Close()
         }
-        // 删完再起监听器，避免收到 frp 房的 room_removed
+        // 删完再起监听器：只认 vlan 房的 room_removed（frp 房的广播还滞留在接收缓冲里）
+        vlanRoomID := vlanRoom["id"]
         removedCh := make(chan map[string]any, 1)
         go func() {
                 for {
@@ -334,20 +335,17 @@ func TestIntegration(t *testing.T) {
                         if err := guestWS.ReadJSON(&msg); err != nil {
                                 return
                         }
-                        if msg["type"] == "room_removed" {
+                        if msg["type"] == "room_removed" && msg["room_id"] == vlanRoomID {
                                 removedCh <- msg
                                 return
                         }
                 }
         }()
-        vlanRoomID := vlanRoom["id"]
         hostWS.Close() // 房主断开 WS
 
         select {
-        case msg := <-removedCh:
-                if msg["room_id"] != vlanRoomID {
-                        t.Errorf("room_removed room_id = %v, 期望 %v", msg["room_id"], vlanRoomID)
-                }
+        case <-removedCh:
+                // 收到 vlan 房的 room_removed，⑥ 通过
         case <-time.After(15 * time.Second):
                 t.Error("15 秒内未收到 room_removed 广播（清扫=2s，断线阈值=3s）")
         }
