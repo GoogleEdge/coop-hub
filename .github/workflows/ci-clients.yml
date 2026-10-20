@@ -11,7 +11,8 @@ jobs:
         with:
           msystem: MINGW64
           install: >-
-            git make mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake
+            git make autoconf automake libtool
+            mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake
             mingw-w64-x86_64-make
             mingw-w64-x86_64-openssl mingw-w64-x86_64-pkg-config
       - shell: msys2 {0}
