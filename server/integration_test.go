@@ -37,7 +37,7 @@ func TestIntegration(t *testing.T) {
         }
 
         // 建管理员
-        admin := exec.Command(bin, "-createadmin", "admin AdminPass123 初一1班 管理员")
+        admin := exec.Command(bin, "-createadmin", "admin", "AdminPass123", "初一1班", "管理员")
         if out, err := admin.CombinedOutput(); err != nil {
                 t.Fatalf("创建管理员失败：%v\n%s", err, out)
         }
