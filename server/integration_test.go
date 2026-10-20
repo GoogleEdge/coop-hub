@@ -315,7 +315,17 @@ func TestIntegration(t *testing.T) {
         }
 
         // ---- ⑥ 房主断线 → 清扫删房 → 广播 room_removed ----
-        // vlan 房主是 stuhost（hostWS）；guestWS 负责监听 room_removed
+        // 先用 REST 关闭 frp 房（顺带验证 DELETE 接口），保证⑥只收到 vlan 房的广播
+        delReq, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/rooms/%d", int(frpRoom["id"].(float64))), nil)
+        delReq.URL.Scheme = "http"
+        delReq.URL.Host = "127.0.0.1:7100"
+        delReq.Header.Set("Authorization", "Bearer "+hostToken)
+        if r4, err := http.DefaultClient.Do(delReq); err != nil || r4.StatusCode != 200 {
+                t.Fatalf("DELETE /api/rooms 失败：%v 状态=%v", err, r4)
+        } else {
+                r4.Body.Close()
+        }
+        // 删完再起监听器，避免收到 frp 房的 room_removed
         removedCh := make(chan map[string]any, 1)
         go func() {
                 for {
@@ -331,16 +341,6 @@ func TestIntegration(t *testing.T) {
                 }
         }()
         vlanRoomID := vlanRoom["id"]
-        // 先用 REST 关闭 frp 房（顺带验证 DELETE 接口），保证⑥只收到 vlan 房的广播
-        delReq, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/rooms/%d", int(frpRoom["id"].(float64))), nil)
-        delReq.URL.Scheme = "http"
-        delReq.URL.Host = "127.0.0.1:7100"
-        delReq.Header.Set("Authorization", "Bearer "+hostToken)
-        if r4, err := http.DefaultClient.Do(delReq); err != nil || r4.StatusCode != 200 {
-                t.Fatalf("DELETE /api/rooms 失败：%v 状态=%v", err, r4)
-        } else {
-                r4.Body.Close()
-        }
         hostWS.Close() // 房主断开 WS
 
         select {
