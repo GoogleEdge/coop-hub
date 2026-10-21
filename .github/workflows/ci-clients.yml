@@ -29,7 +29,7 @@ jobs:
           for tag in 3.1.1 3.1.0; do
             rm -rf /c/n2n
             git clone -q -b $tag https://github.com/ntop/n2n /c/n2n && cd /c/n2n
-            ./autogen.sh && ./configure CFLAGS="-std=gnu99 -Wno-error=implicit-function-declaration -Wno-error=incompatible-pointer-types" && make -j && ok=$tag && break || true
+            ./autogen.sh && ./configure CFLAGS="-std=gnu99 -Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=return-mismatch -Wno-error=enum-int-mismatch" && make -j && ok=$tag && break || true
           done
           [ -n "$ok" ] || { echo "::error::n2n 3.1.1/3.1.0 均编译失败（官方无 Windows 资产，已记录 TEST-REPORT）"; exit 1; }
           echo "n2n 使用 tag $ok 编译成功"
