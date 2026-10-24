@@ -48,9 +48,10 @@ jobs:
           New-Item -Force deps -ItemType Directory | Out-Null
           Copy-Item core/build/jdyc-core.dll deps/
           Copy-Item C:\n2n\edge.exe deps/
-          $tap = Invoke-RestMethod "https://api.github.com/repos/OpenVPN/tap-windows6/releases/latest"
-          $ta = $tap.assets | Where-Object {$_.name -match "installer.exe"} | Select-Object -First 1
-          Invoke-WebRequest $ta.browser_download_url -OutFile deps/tap-windows-installer.exe
+          # tap-windows6 的 GitHub release 无 NSIS 安装器（只有 .msm/驱动 zip），
+          # 用 OpenVPN 官方托管的固定版本 NSIS 安装器（支持 /S 静默安装，供 jdyc-core 调用）
+          Invoke-WebRequest "https://swupdate.openvpn.org/community/releases/tap-windows-9.24.7-I601-Win7.exe" -OutFile deps/tap-windows-installer.exe
+          if ((Get-Item deps/tap-windows-installer.exe).Length -lt 1MB) { throw "TAP 安装器下载异常" }
       - uses: actions/upload-artifact@v4
         with: {name: jdyc-deps, path: deps/}
   qt-win7:
@@ -74,7 +75,7 @@ jobs:
                 -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded ^
                 -DJDYC_DEPS_DIR=%CD%\deps
           cmake --build client-qt/build --config Release -j
-          windeployqt --release client-qt/build/Release/JDYCHub.exe
+          windeployqt --release --qmldir client-qt/qml client-qt/build/Release/JDYCHub.exe
           xcopy /E /I /Y deps\* client-qt\build\Release\
       - uses: actions/upload-artifact@v4
         with: {name: jdyc-qt-dist, path: client-qt/build/Release/}
