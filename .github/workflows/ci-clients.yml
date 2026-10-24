@@ -48,10 +48,14 @@ jobs:
           New-Item -Force deps -ItemType Directory | Out-Null
           Copy-Item core/build/jdyc-core.dll deps/
           Copy-Item C:\n2n\edge.exe deps/
-          # tap-windows6 的 GitHub release 无 NSIS 安装器（只有 .msm/驱动 zip），
-          # 用 OpenVPN 官方托管的固定版本 NSIS 安装器（支持 /S 静默安装，供 jdyc-core 调用）
-          Invoke-WebRequest "https://swupdate.openvpn.org/community/releases/tap-windows-9.24.7-I601-Win7.exe" -OutFile deps/tap-windows-installer.exe
-          if ((Get-Item deps/tap-windows-installer.exe).Length -lt 1MB) { throw "TAP 安装器下载异常" }
+          # tap-windows6 官方 release（GitHub 托管）：dist.win7.zip 内含 tapinstall.exe + 驱动文件，
+          # jdyc-core 用 "tapinstall install OemVista.inf tap0901" 静默装驱动（swupdate 的 NSIS 包被 CDN 反爬拦截，弃用）
+          Invoke-WebRequest "https://github.com/OpenVPN/tap-windows6/releases/download/9.27.0/dist.win7.zip" -OutFile tap.zip
+          Expand-Archive tap.zip -DestinationPath tapdist
+          Copy-Item tapdist/dist.win7/amd64/tapinstall.exe deps/
+          Copy-Item tapdist/dist.win7/amd64/OemVista.inf deps/
+          Copy-Item tapdist/dist.win7/amd64/tap0901.cat deps/
+          Copy-Item tapdist/dist.win7/amd64/tap0901.sys deps/
       - uses: actions/upload-artifact@v4
         with: {name: jdyc-deps, path: deps/}
   qt-win7:

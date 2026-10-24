@@ -62,7 +62,7 @@ class _RoomPageState extends State<RoomPage> {
           _leave();
           return;
         }
-        final rc = core.tapInstall();
+        final rc = core.tapInstall(_appDir);
         if (rc != 0) {
           setState(() => _error = 'TAP 驱动安装失败（错误码 $rc）');
           return;

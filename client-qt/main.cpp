@@ -70,8 +70,8 @@ public:
     }
     Q_INVOKABLE int tapInstall() {
         if (!m_tapInstall) return -11;
-        QString exe = appDir() + "/tap-windows-installer.exe";
-        QByteArray p = exe.toUtf8();
+        QString dir = appDir(); /* tapinstall.exe / OemVista.inf 等驱动文件所在目录 */
+        QByteArray p = dir.toUtf8();
         return m_tapInstall(p.constData());
     }
     Q_INVOKABLE int frpStart(const QString& toml) {

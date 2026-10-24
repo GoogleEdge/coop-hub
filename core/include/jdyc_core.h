@@ -13,7 +13,7 @@ int jdyc_vlan_start(const char* edge_path, const char* community,
                     const char* my_ip, jdyc_log_cb cb);
 int jdyc_vlan_stop(void);
 int jdyc_tap_installed(void);                    /* 0已装 -10未装 */
-int jdyc_tap_install(const char* installer_path);/* 运行TAP安装exe，静默参数 /S */
+int jdyc_tap_install(const char* tap_dir);       /* 用目录内 tapinstall.exe 静默装 tap0901 */
 int jdyc_frp_running(void);
 int jdyc_vlan_running(void);
 #ifdef __cplusplus

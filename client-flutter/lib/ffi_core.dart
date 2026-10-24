@@ -117,8 +117,14 @@ class JdycCore {
   }
 
   // TAP：0已装 -10未装；安装返回 -11 失败 / 0 成功
+  // tapDir 为驱动文件目录（tapinstall.exe / OemVista.inf 等所在目录）
   int tapInstalled() => _tapInstalled();
-  int tapInstall() => _tapInstall();
+  int tapInstall(String tapDir) {
+    final p = _toC(tapDir);
+    final rc = _tapInstall(p);
+    calloc.free(p);
+    return rc;
+  }
   int frpStop() => _frpStop();
   int vlanStop() => _vlanStop();
   bool frpRunning() => _frpRunning() != 0;
