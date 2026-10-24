@@ -63,7 +63,8 @@ def main() -> None:
 
     ico_sizes = [(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)]
     imgs = [base_logo(s, args.plain) for s, _ in ico_sizes]
-    imgs[0].save(os.path.join(out_dir, "logo.ico"), sizes=ico_sizes)
+    # 用 256px 基底保存：Pillow 的 sizes 只向下缩放，从 16px 基底出发只会得到单个 16x16 条目
+    imgs[-1].save(os.path.join(out_dir, "logo.ico"), sizes=ico_sizes)
     print(f"图标已生成到 {out_dir}")
 
 

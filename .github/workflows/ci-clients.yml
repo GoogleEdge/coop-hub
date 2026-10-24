@@ -40,6 +40,7 @@ jobs:
           $a = $r.assets | Where-Object {$_.name -match "windows_amd64.zip"} | Select-Object -First 1
           Invoke-WebRequest $a.browser_download_url -OutFile frp.zip
           Expand-Archive frp.zip -DestinationPath frp
+          New-Item -Force deps -ItemType Directory | Out-Null
           Copy-Item (Get-ChildItem frp -Recurse -Filter frpc.exe | Select-Object -First 1).FullName deps/
       - name: 整理依赖目录
         shell: pwsh
